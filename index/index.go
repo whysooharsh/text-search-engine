@@ -37,7 +37,7 @@ func (idx *Index) Add(doc Document) {
 	}
 }
 
-func (idx *Index) Finalise() {
+func (idx *Index) Finalize() {
 	for term := range idx.postings {
 		sort.Slice(idx.postings[term], func(i, j int) bool {
 			return idx.postings[term][i] < idx.postings[term][j]
