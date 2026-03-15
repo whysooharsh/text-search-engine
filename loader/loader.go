@@ -40,7 +40,7 @@ func Load(dir string) ([]index.Document, error) {
 	}
 
 	if len(docs) == 0 {
-		return nil, fmt.Errorf("no .txt files found in %q : ", dir)
+		return nil, fmt.Errorf("no .txt files found in %q", dir)
 	}
 
 	return docs, nil

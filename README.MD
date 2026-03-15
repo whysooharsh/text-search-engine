@@ -27,7 +27,7 @@ search-engine/
 
 ## Getting started
 
-**Prerequisites:** Go 1.21+
+**Prerequisites:** Go 1.24+
 
 ```bash
 go mod tidy
@@ -54,6 +54,10 @@ curl "http://localhost:8000/search?q=machine%20learning"
   "results": [{ "id": 2, "title": "doc2" }]
 }
 ```
+
+### `GET /health`
+
+Returns `{"status":"ok"}` with HTTP 200 when the server is running.
 
 ## CLI flags
 

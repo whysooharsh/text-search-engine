@@ -1,4 +1,5 @@
-// text pipeline (tokenize->filter->stem)
+// Package index implements the text pipeline and inverted index.
+// text pipeline (tokenize -> filter -> stem)
 
 package index
 
@@ -25,9 +26,11 @@ var stopWords = map[string]struct{}{
 	"you": {}, "your": {}, "yours": {},
 }
 
+// Analyze runs the full text pipeline on the input string: tokenize,
+// lowercase, remove stop words, and stem. It returns the resulting tokens.
 func Analyze(text string) []string {
 	tokens := tokenize(text)
-	var terms []string
+	terms := make([]string, 0, len(tokens))
 	for _, tok := range tokens {
 		tok = strings.ToLower(tok)
 		if _, stop := stopWords[tok]; stop {
@@ -38,7 +41,6 @@ func Analyze(text string) []string {
 		if tok != "" {
 			terms = append(terms, tok)
 		}
-
 	}
 	return terms
 }
