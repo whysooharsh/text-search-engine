@@ -1,0 +1,1 @@
+![System architecture diagram showing document loading indexing and search API flow](diagram.png)

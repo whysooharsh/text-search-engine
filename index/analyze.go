@@ -6,7 +6,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/kljensen/snowball"
+	"github.com/kljensen/snowball/english"
 )
 
 var stopWords = map[string]struct{}{
@@ -25,25 +25,18 @@ var stopWords = map[string]struct{}{
 	"you": {}, "your": {}, "yours": {},
 }
 
-
-
 func Analyze(text string) []string {
 	tokens := tokenize(text)
 	var terms []string
-
-	for _, tok : range tokens {
+	for _, tok := range tokens {
 		tok = strings.ToLower(tok)
-		if _, stop := stopWords[tok]; stop{
+		if _, stop := stopWords[tok]; stop {
 			continue
 		}
 
-		stemmed, err := snowball.Stem(tok, "english", true)
-		if err != nil {
-			continue
-		}
-
-		if stemmed != "" {
-			terms := append(terms, stemmed)
+		tok = english.Stem(tok, false)
+		if tok != "" {
+			terms = append(terms, tok)
 		}
 
 	}
@@ -51,7 +44,7 @@ func Analyze(text string) []string {
 }
 
 func tokenize(text string) []string {
-	return strings.FieldsFunc(text, func(rune) bool {
+	return strings.FieldsFunc(text, func(r rune) bool {
 		return !unicode.IsLetter(r) && !unicode.IsDigit(r)
 	})
 }

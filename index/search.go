@@ -62,7 +62,7 @@ func (idx *Index) Search(query string) []Document {
 func sortByLen(lists [][]uint32) {
 
 	for i := 1; i < len(lists); i++ {
-		for j := 1; j > 0 && len(lists[j]) < len(lists[j-1]); j-- {
+		for j := i; j > 0 && len(lists[j]) < len(lists[j-1]); j-- {
 			lists[j], lists[j-1] = lists[j-1], lists[j]
 		}
 	}
