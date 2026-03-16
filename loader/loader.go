@@ -1,48 +1,69 @@
 package loader
 
 import (
+	"encoding/xml"
 	"fmt"
+	"io"
+	"log"
 	"os"
-
-	"path/filepath"
-	"strings"
 
 	"github.com/whysooharsh/text-search-engine/index"
 )
 
-func Load(dir string) ([]index.Document, error) {
-	entries, err := os.ReadDir(dir)
+type xmlPage struct {
+	Title string `xml:"title"`
+	ID    uint32 `xml:"id"`
+	Text  string `xml:"revision>text"`
+}
+
+func Load(path string, fn func(index.Document), maxDocs int) error {
+	f, err := os.Open(path)
 	if err != nil {
-		return nil, fmt.Errorf("can't open dir %q : %w", dir, err)
+		return fmt.Errorf("cant open file %q: %w", path, err)
 	}
+	defer f.Close()
 
-	var docs []index.Document
-	var id uint32
+	dec := xml.NewDecoder(f)
+	count := 0
 
-	for _, entry := range entries {
-		if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".txt") {
+	for {
+		tok, err := dec.Token()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return fmt.Errorf("xml parse error: %w", err)
+		}
+
+		se, ok := tok.(xml.StartElement)
+		if !ok || se.Name.Local != "page" {
 			continue
 		}
 
-		path := filepath.Join(dir, entry.Name())
-		body, err := os.ReadFile(path)
-
-		if err != nil {
-			return nil, fmt.Errorf("reading %s: %w", path, err)
+		var page xmlPage
+		if err := dec.DecodeElement(&page, &se); err != nil {
+			continue
 		}
 
-		id++
-		docs = append(docs, index.Document{
-			ID:    id,
-			Title: strings.TrimSuffix(entry.Name(), ".txt"),
-			Body:  string(body),
+		if page.Text == "" || page.Title == "" {
+			continue
+		}
+
+		fn(index.Document{
+			ID:    page.ID,
+			Title: page.Title,
+			Body:  page.Text,
 		})
+
+		count++
+		if count%10000 == 0 {
+			log.Printf("processed %d documents...", count)
+		}
+		if maxDocs > 0 && count >= maxDocs {
+			log.Printf("reached limit of %d documents, stopping", maxDocs)
+			break
+		}
 	}
 
-	if len(docs) == 0 {
-		return nil, fmt.Errorf("no .txt files found in %q : ", dir)
-	}
-
-	return docs, nil
-
+	return nil
 }
